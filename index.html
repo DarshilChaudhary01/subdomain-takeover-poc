@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Subdomain Takeover Advisory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06080d;
+  --surface: #0d1117;
+  --border: #1b2433;
+  --border-hl: #e8433830;
+  --text: #c9d1d9;
+  --text-dim: #6e7a8a;
+  --text-bright: #ecf0f5;
+  --red: #e84338;
+  --red-dim: #e8433825;
+  --amber: #d29922;
+  --green: #3fb950;
+  --blue: #58a6ff;
+  --mono: 'JetBrains Mono', 'Consolas', monospace;
+  --sans: 'Inter', -apple-system, sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);
+}
+
+.wrap{max-width:940px;margin:0 auto;padding:60px 24px 80px}
+
+/* header */
+.hdr{margin-bottom:52px;text-align:center}
+.hdr h1{
+  font-size:clamp(26px,4.5vw,40px);font-weight:800;color:var(--text-bright);
+  line-height:1.2;margin-bottom:14px;letter-spacing:-.5px;
+}
+.hdr h1 span{color:var(--red)}
+.hdr-sub{font-size:15px;color:var(--text-dim);max-width:580px;margin:0 auto}
+
+/* cards */
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;margin-bottom:28px;overflow:hidden;
+}
+.card-head{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 20px;border-bottom:1px solid var(--border);
+  font-size:13px;font-weight:600;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:1.2px;
+  font-family:var(--mono);
+}
+.card-head .dot{width:8px;height:8px;border-radius:50%}
+.card-body{padding:24px}
+
+/* attack chain */
+.chain{display:flex;align-items:stretch;gap:0;flex-wrap:wrap}
+.chain-step{
+  flex:1;min-width:180px;padding:20px 16px;
+  border-right:1px solid var(--border);
+  position:relative;
+}
+.chain-step:last-child{border-right:none}
+.chain-step::after{
+  content:'\2192';position:absolute;right:-10px;top:50%;
+  transform:translateY(-50%);color:var(--red);font-size:18px;font-weight:700;
+  background:var(--surface);padding:2px 0;z-index:1;
+}
+.chain-step:last-child::after{display:none}
+.step-num{
+  font-family:var(--mono);font-size:11px;color:var(--red);
+  font-weight:600;margin-bottom:6px;letter-spacing:1px;
+}
+.step-title{font-size:13px;font-weight:600;color:var(--text-bright);margin-bottom:4px}
+.step-desc{font-size:12px;color:var(--text-dim);line-height:1.5}
+
+/* impact grid */
+.impact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.impact-item{
+  padding:20px;border-radius:6px;
+  border:1px solid var(--border);
+  background:linear-gradient(135deg,var(--surface) 0%,#0d111700 100%);
+  transition:border-color .2s;
+}
+.impact-item:hover{border-color:var(--border-hl)}
+.impact-icon{font-size:22px;margin-bottom:10px;display:block}
+.impact-item h4{font-size:13px;font-weight:600;color:var(--text-bright);margin-bottom:4px}
+.impact-item p{font-size:12px;color:var(--text-dim);line-height:1.5}
+
+/* remediation */
+.fix-list{list-style:none;counter-reset:fix}
+.fix-list li{
+  counter-increment:fix;
+  padding:14px 0 14px 40px;position:relative;
+  font-size:14px;border-bottom:1px solid var(--border);
+  color:var(--text);
+}
+.fix-list li:last-child{border:none}
+.fix-list li::before{
+  content:counter(fix);position:absolute;left:0;top:14px;
+  width:24px;height:24px;border-radius:50%;
+  background:var(--red-dim);color:var(--red);
+  font-size:11px;font-weight:700;font-family:var(--mono);
+  display:flex;align-items:center;justify-content:center;
+}
+
+@media(max-width:600px){
+  .chain{flex-direction:column}
+  .chain-step{border-right:none;border-bottom:1px solid var(--border)}
+  .chain-step::after{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <h1>Subdomain Takeover via <span>Dangling Redirect</span></h1>
+    <p class="hdr-sub">Unclaimed destination domain permits full content control over a production subdomain.</p>
+  </div>
+
+  <!-- ATTACK CHAIN -->
+  <div class="card">
+    <div class="card-head"><span class="dot" style="background:var(--red)"></span>Attack Chain</div>
+    <div class="card-body">
+      <div class="chain">
+        <div class="chain-step">
+          <div class="step-num">01 &mdash; Recon</div>
+          <div class="step-title">DNS Enumeration</div>
+          <div class="step-desc">Subdomain discovered via passive reconnaissance. A record resolves to shared hosting at 143.95.230.101.</div>
+        </div>
+        <div class="chain-step">
+          <div class="step-num">02 &mdash; Identify</div>
+          <div class="step-title">Dangling Redirect</div>
+          <div class="step-desc">HTTP probe reveals WordPress 301 redirect to <code>aaohs.co.za</code> &mdash; a domain with no active registration.</div>
+        </div>
+        <div class="chain-step">
+          <div class="step-num">03 &mdash; Acquire</div>
+          <div class="step-title">Domain Registration</div>
+          <div class="step-desc">Destination domain registered by assessment team. Web server configured to serve controlled content.</div>
+        </div>
+        <div class="chain-step">
+          <div class="step-num">04 &mdash; Takeover</div>
+          <div class="step-title">Content Control</div>
+          <div class="step-desc">Any visitor to the legitimate subdomain is now permanently redirected to attacker-controlled infrastructure.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMPACT ASSESSMENT -->
+  <div class="card">
+    <div class="card-head"><span class="dot" style="background:var(--amber)"></span>Impact Assessment</div>
+    <div class="card-body">
+      <div class="impact-grid">
+        <div class="impact-item">
+          <span class="impact-icon">&#128274;</span>
+          <h4>Credential Harvesting</h4>
+          <p>Attacker hosts a cloned login portal. Victims trust the parent domain and submit credentials willingly.</p>
+        </div>
+        <div class="impact-item">
+          <span class="impact-icon">&#127922;</span>
+          <h4>Malware Delivery</h4>
+          <p>Serve drive-by downloads or exploit kits under the brand's trusted subdomain origin.</p>
+        </div>
+        <div class="impact-item">
+          <span class="impact-icon">&#127915;</span>
+          <h4>Session &amp; Cookie Theft</h4>
+          <p>If cookies are scoped to <code>.asianpaintsnepal.com</code>, the attacker domain inherits read access to auth tokens.</p>
+        </div>
+        <div class="impact-item">
+          <span class="impact-icon">&#128200;</span>
+          <h4>Brand &amp; Trust Erosion</h4>
+          <p>Public-facing subdomain serving attacker content undermines customer confidence and regulatory posture.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECOMMENDED REMEDIATION -->
+  <div class="card">
+    <div class="card-head"><span class="dot" style="background:var(--green)"></span>Recommended Remediation</div>
+    <div class="card-body">
+      <ol class="fix-list">
+        <li><strong>Remove the stale DNS A record</strong> for <code>beta.bathsense.asianpaintsnepal.com</code> or update it to point to active infrastructure.</li>
+        <li><strong>Audit the WordPress instance</strong> at 143.95.230.101 &mdash; remove or reconfigure the <code>siteurl</code> / <code>home</code> values that trigger the 301 redirect.</li>
+        <li><strong>Conduct a full DNS hygiene sweep</strong> across all <code>*.asianpaintsnepal.com</code> subdomains to identify additional dangling records.</li>
+        <li><strong>Implement monitoring</strong> &mdash; set up alerts for DNS record changes and periodically validate that all subdomain destinations resolve to owned assets.</li>
+      </ol>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
